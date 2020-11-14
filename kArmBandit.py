@@ -2,60 +2,9 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt 
 
-class bandit:
-    def __init__(self, mean, var):
-        self.mean = mean
-        self.var = var
-    
-    def hit(self):
-        return np.random.normal(self.mean, self.var)
-    
-class greedyPolicy:
-    def __init__(self, action_set, initial_est):
-        self.estimate = np.full((len(action_set)), float(initial_est))
-        self.action_stats = np.full((len(action_set)), 0)
-    def getAction(self):
-        curr_act = [0]
-        curr_val = self.estimate[0]
-        for i in range(1, len(self.estimate)):
-            if self.estimate[i] > curr_val:
-                curr_val = self.estimate[i]
-                curr_act = [i]
-            elif self.estimate[i] == curr_val:
-                curr_act.append(i)
-        return random.choice(curr_act)
-    def updateEstimate(self, action, reward):
-        #print("esitmate before: ", self.estimate[action])
-        self.action_stats[action] += 1
-        self.estimate[action] += (1/float(self.action_stats[action])) * (reward - self.estimate[action])
-        #print("action: ", action, " reward: ", reward, self.action_stats[action], self.estimate[action])
+from bandit import bandit
+from epsi_greedyPolicy import epsi_greedyPolicy
 
-class epsi_greedyPolicy:
-    def __init__(self, epsilon, action_set, initial_est):
-        self.epsilon = epsilon
-        self.estimate = np.full((len(action_set)), float(initial_est))
-        self.action_stats = np.full((len(action_set)), 0)
-
-    def getAction(self):
-        if random.random() < self.epsilon:
-            return random.randint(0, len(self.action_stats)-1)
-        else:
-            return self.greedyAction()
-
-    def greedyAction(self):
-        curr_act = [0]
-        curr_val = self.estimate[0]
-        for i in range(1, len(self.estimate)):
-            if self.estimate[i] > curr_val:
-                curr_val = self.estimate[i]
-                curr_act = [i]
-            elif self.estimate[i] == curr_val:
-                curr_act.append(i)
-        return random.choice(curr_act)
-
-    def updateEstimate(self, action, reward):
-        self.action_stats[action] += 1
-        self.estimate[action] += (1/float(self.action_stats[action])) * (reward - self.estimate[action])
 
 if __name__ == "__main__":
     k = 10              # Number of bandits
@@ -103,14 +52,14 @@ if __name__ == "__main__":
             optimalActionCnt[j][i-1] = optimalCnt[j]/i
             avgValues[j][i-1] = totalReward[j]/i
             action_history[i-1] = action
+    # Done learning
 
     plt.subplot(211)
     plt.title("Average reward")
     plt.plot(chartx, avgValues[0],'r-', label="epsilon = 0.2")
     plt.plot(chartx, avgValues[1],'b-', label="epsilon = 0.1")
     plt.plot(chartx, avgValues[2],'g-', label="epsilon = 0.01")
-    plt.plot(chartx, avgValues[3],'b--', label="greedy")
-    plt.legend(bbox_to_anchor=(0., 0.02, 0.3, 1), loc='lower left', ncol=1, borderaxespad=0.)
+    plt.plot(chartx, avgValues[3],'k--', label="greedy")
     plt.xlim((0, NUM_CYCLES))
     plt.xlabel("Time Step")
 
@@ -120,10 +69,11 @@ if __name__ == "__main__":
     plt.plot(chartx, optimalActionCnt[0],'r-', label="epsilon = 0.2")
     plt.plot(chartx, optimalActionCnt[1],'b-', label="epsilon = 0.1")
     plt.plot(chartx, optimalActionCnt[2],'g-', label="epsilon = 0.01")
-    plt.plot(chartx, optimalActionCnt[3],'b--', label="greedy")
+    plt.plot(chartx, optimalActionCnt[3],'k--', label="greedy")
     plt.xlim((0, NUM_CYCLES))
     plt.ylim((-0.01, 1))
     plt.xlabel("Time Step")
+    plt.legend(bbox_to_anchor=(0,-0.3,0,0), loc='lower left', ncol=4, borderaxespad=0.)
     
     plt.subplots_adjust(wspace=0.5, hspace=0.5)
     plt.show()
